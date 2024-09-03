@@ -5,7 +5,7 @@ from itertools import cycle
 from pyrogram import Client
 from better_proxy import Proxy
 from fake_useragent import UserAgent
-from bot.utils.logger import log
+from bot.utils.logger import logger
 from bot.utils.settings import config, logo
 from bot.core.bot import run_bot
 
@@ -27,15 +27,24 @@ async def register_sessions() -> None:
 	
 	if not os.path.exists('sessions'): os.mkdir('sessions')
 
+	proxy = {
+		"scheme": config.PROXY_TYPE,
+		"hostname": account["proxy"].split(":")[1].split("@")[1],
+		"port": int(account["proxy"].split(":")[2]),
+		"username": account["proxy"].split(":")[0],
+		"password": account["proxy"].split(":")[1].split("@")[0]
+	} if account["proxy"] else None
+
 	session = Client(
 		name=session_name,
 		api_id=config.API_ID,
 		api_hash=config.API_HASH,
-		workdir="sessions/"
+		workdir="sessions/",
+		proxy=proxy
 	)
 
 	async with session: user_data = await session.get_me()
-	log.success(f"Session added successfully: {user_data.username or user_data.id} | "
+	logger.success(f"Session added successfully: {user_data.username or user_data.id} | "
                    f"{user_data.first_name or ''} {user_data.last_name or ''}")
 
 def get_proxies() -> list[Proxy]:
@@ -55,7 +64,7 @@ def get_session_data(sessions: list) -> dict:
 			with open(file=data_file, encoding='utf-8') as file:
 				data = json.load(file)
 		except Exception as error:
-			log.error(f"Error when loading session data: {error}")
+			logger.error(f"Error when loading session data: {error}")
 	
 	all_data_exists = True if all(session in data for session in sessions) else False
 	if not all_data_exists:
@@ -80,19 +89,30 @@ async def get_tg_clients() -> tuple[list[Client], dict]:
 		raise FileNotFoundError("Not found session files")
 
 	session_data = get_session_data(session_names)
-	tg_clients = [Client(
-		name=session_name,
-		api_id=config.API_ID,
-		api_hash=config.API_HASH,
-		workdir='sessions/',
-		plugins=dict(root='bot/plugins')
-	) for session_name in session_names]
+	tg_clients = []
+	for session_name in session_names:
+		proxy = {
+			"scheme": config.PROXY_TYPE,
+			"hostname": session_data[session_name]["proxy"].split(":")[1].split("@")[1],
+			"port": int(session_data[session_name]["proxy"].split(":")[2]),
+			"username": session_data[session_name]["proxy"].split(":")[0],
+			"password": session_data[session_name]["proxy"].split(":")[1].split("@")[0]
+		} if session_data[session_name]["proxy"] else None
+
+		tg_clients.append(Client(
+			name=session_name,
+			api_id=config.API_ID,
+			api_hash=config.API_HASH,
+			workdir='sessions/',
+			plugins=dict(root='bot/plugins'),
+			proxy=proxy
+		))
 
 	return tg_clients, session_data
 
 async def run_bot_with_delay(tg_client: Client, data: dict, delay: int) -> None:
 	if delay > 0:
-		log.info(f"{tg_client.name} | Wait {delay} seconds before start")
+		logger.info(f"{tg_client.name} | Wait {delay} seconds before start")
 		await asyncio.sleep(delay)
 	await run_bot(tg_client=tg_client, sess_data=data)
 
@@ -109,11 +129,11 @@ async def run_clients(tg_clients: list[Client], session_data: dict) -> None:
 
 async def start() -> None:
 	if not config:
-		log.warning(f"Please fix the above errors in the .env file")
+		logger.warning(f"Please fix the above errors in the .env file")
 		return
 	parser = ArgumentParser()
 	parser.add_argument('-a', '--action', type=int, choices=[1, 2], help='Action to perform  (1 or 2)')
-	log.info(f"Detected {len(get_session_names())} sessions | {len(get_proxies())} proxies")
+	logger.info(f"Detected {len(get_session_names())} sessions | {len(get_proxies())} proxies")
 	action = parser.parse_args().action
 
 	if not action:
@@ -123,7 +143,7 @@ async def start() -> None:
 			if action.isdigit() and action in ['1', '2']:
 				action = int(action)
 				break
-			log.warning("Action must be a number (1 or 2)")
+			logger.warning("Action must be a number (1 or 2)")
 
 	if action == 1:
 		await register_sessions()

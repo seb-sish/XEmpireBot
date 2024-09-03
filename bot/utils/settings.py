@@ -1,5 +1,5 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from bot.utils.logger import log
+from bot.utils.logger import logger
 logo = """
 
 ██   ██     ███████ ███    ███ ██████  ██ ██████  ███████     ██████   ██████  ████████ 
@@ -29,15 +29,16 @@ class Settings(BaseSettings):
 	IGNORED_SKILLS: list[str] = []
 	MINING_SKILLS_LEVEL: int = 10
 	PROTECTED_BALANCE: int = 0
-	REF_CODE: str = 'hero5726822287'
+	REF_CODE: str = 'hero464344058'
 
 	SLEEP_BETWEEN_START: list[int] = [20, 360]
 	ERRORS_BEFORE_STOP: int = 3
+	PROXY_TYPE: str = 'socks5'
 	USE_PROXY_FROM_FILE: bool = False
 	DEBUG_MODE: bool = False
 
 try:
 	config = Settings()
 except Exception as error:
-	log.error(error)
+	logger.error(error)
 	config = False

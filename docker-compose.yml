@@ -1,7 +1,7 @@
 version: '3'
 services:
     bot:
-        container_name: 'MuskEmpireBot'
+        container_name: 'Musk'
         stop_signal: SIGINT
         build:
             context: .

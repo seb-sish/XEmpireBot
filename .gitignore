@@ -34,8 +34,10 @@ share/python-wheels/
 
 # Sessions
 sessions/
+session_data.json
 
 # Installer logs
+logs/
 pip-log.txt
 pip-delete-this-directory.txt
 

@@ -2,7 +2,7 @@ import random
 from time import time
 from datetime import datetime, timezone
 
-from bot.utils.logger import log
+from bot.utils.logger import logger
 from bot.utils.settings import config
 
 ########## SKILLS ##########
@@ -125,7 +125,7 @@ def calculate_best_skill(skills: list, ignored_skills: list, profile: dict, leve
 				possible_skills = sorted(possible_skills, key=lambda x: (x['profit'] / x['price'], x['profit']), reverse=True)
 		
 		if config.DEBUG_MODE:
-			log.debug(f"Possible skills for improve (mode={config.SKILLS_MODE}):")
+			logger.debug(f"Possible skills for improve (mode={config.SKILLS_MODE}):")
 			for skill in possible_skills:
 				print(f"{skill['key']:35} | price: {number_short(skill['price']):>7} | profit: {number_short(skill['profit']):>7}")
 		
