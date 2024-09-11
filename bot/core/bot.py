@@ -937,7 +937,7 @@ class CryptoBot:
 					now = datetime.now().time()
 					if day_start <= now <= day_end:
 						log_end = '(daytime main delay)'
-						main_delay = 3600 # 1 hour delay during daytime
+						main_delay = 1800 # 1 hour delay during daytime
 						if config.TAPS_ENABLED and not self.taps_limit:
 							log_end = '(waiting for energy recovery)'
 							sleep_time = energy_recovery_time
@@ -948,7 +948,7 @@ class CryptoBot:
 							sleep_time = main_delay
 					else:
 						log_end = '(night main delay)'
-						main_delay = 10800 # 3 hours delay at night
+						main_delay = 5400 # 3 hours delay at night
 						sleep_time = main_delay
 						main_actions = True
 						sum_delay = 0
